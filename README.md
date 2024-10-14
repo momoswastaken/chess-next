@@ -60,7 +60,7 @@ cd server
 
 Start the backend server using Nodemon: ( The backend server will run at http://localhost:5000 (or your specified port ).
 
-    npx nodemon server.js
+     nodemon index.js
 
 
 
