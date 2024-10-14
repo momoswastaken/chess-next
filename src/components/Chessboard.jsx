@@ -6,7 +6,7 @@ import { Chess } from "chess.js";
 import styles from './chessboard.module.css';
 import io from "socket.io-client";
 
-const socket = io("http://localhost:3002"); // Connect to the default namespace
+const socket = io("http://localhost:3000"); // Connect to the default namespace
 
 
 function ChessBoard() {

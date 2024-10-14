@@ -1,20 +1,27 @@
-const express = require("express");
-const http = require("http");
-const socketIO = require("socket.io");
-const cors = require("cors");
+// src/pages/api/socket.js
+import { Server } from "socket.io";
+import { createServer } from "http";
+import Cors from "cors";
 
-const app = express();
-app.use(cors());
+// Initialize CORS middleware
+const cors = Cors({
+  origin: "http://localhost:3000", // Replace with your deployed frontend URL
+  methods: ["GET", "POST"],
+});
 
-const server = http.createServer(app);
-const io = socketIO(server, {
+// Create an HTTP server
+const server = createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end("Socket.IO server is running");
+});
+
+// Initialize Socket.IO
+const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: "http://localhost:3000", // Adjust this when deploying
     methods: ["GET", "POST"],
   },
 });
-
-const PORT = process.env.PORT || 3001;
 
 const rooms = new Map();
 
@@ -38,7 +45,7 @@ io.on("connection", (socket) => {
 
   // Emit the joinedRoom event to the client
   console.log(`Client ${socket.id} joined room ${joinedRoom}`);
-  socket.emit("joinedRoom", {room: joinedRoom, players: rooms.get(joinedRoom)});
+  socket.emit("joinedRoom", { room: joinedRoom, players: rooms.get(joinedRoom) });
 
   const players = rooms.get(joinedRoom);
   if (players.length === 2) {
@@ -63,6 +70,16 @@ io.on("connection", (socket) => {
   });
 });
 
-
-
-server.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
+// Export the server as a function to be used by Vercel
+export default (req, res) => {
+  cors(req, res, () => {
+    // Check for the WebSocket upgrade request
+    if (req.method === "GET" && req.headers.upgrade === "websocket") {
+      // Upgrade to WebSocket
+      return server(req, res);
+    } else {
+      // Handle other HTTP requests
+      return res.status(200).send("Socket.IO API");
+    }
+  });
+};
