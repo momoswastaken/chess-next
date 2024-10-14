@@ -48,9 +48,9 @@ Running the Backend Server:
 
 Running the Next.js Frontend
 Start the Next.js development server: ( The frontend will be available at http://localhost:3000 ).
-   ```bash
-npm run dev
 
+```bash
+npm run dev
 ```
 Open a split terminal and navigate to the server directory:
 
@@ -60,7 +60,10 @@ cd server
 
 Start the backend server using Nodemon: ( The backend server will run at http://localhost:5000 (or your specified port ).
 
-     nodemon index.js
+ ```bash
+nodemon index.js
+```
+
 
 
 
