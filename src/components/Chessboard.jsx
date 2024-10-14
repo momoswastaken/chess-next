@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import Chessboard from "chessboardjsx";
-import {Chess} from "chess.js";
+import { Chess } from "chess.js";
 import styles from './chessboard.module.css';
 import io from "socket.io-client";
 
+const socket = io("http://localhost:3002"); // Connect to the default namespace
 
-const socket = io("http://localhost:3001");
 
 function ChessBoard() {
   const gameRef = useRef(new Chess());
@@ -16,7 +16,7 @@ function ChessBoard() {
   const [gameStarted, setGameStarted] = useState(false);
 
   useEffect(() => {
-    socket.on("connect", () => { //sutta is here
+    socket.on("connect", () => {
       console.log(`Connected with ID: ${socket.id}`);
     });
   
@@ -60,25 +60,20 @@ function ChessBoard() {
       updateGame(sourceSquare, targetSquare);
     });
 
-    //return () => {
-    //  if (playerColor === null) {
-    //    console.log("Disconnecting socket");
-    //    socket.disconnect();
-    //  }
-  //  };
+    return () => {
+      socket.off("joinedRoom");
+      socket.off("start");
+      socket.off("gameOver");
+      socket.off("move");
+    };
   }, [playerColor]); 
 
-
   const handleMove = ({ sourceSquare, targetSquare }) => {
-    // Don't allow making a move if it's not the player's turn
     if (gameRef.current.turn() !== playerColor[0]) {
       return;
     }
   
-    // Get legal moves for the source square
     const legalMoves = gameRef.current.moves({ square: sourceSquare, verbose: true });
-  
-    // Check if the target square is a legal move
     const isLegalMove = legalMoves.some(move => move.to === targetSquare);
   
     if (!isLegalMove) {
@@ -86,7 +81,6 @@ function ChessBoard() {
       return;
     }
   
-    // If the move is legal, make the move and update the game state
     gameRef.current.move({
       from: sourceSquare,
       to: targetSquare,
@@ -107,25 +101,25 @@ function ChessBoard() {
 
   return (
     <div className={styles.container}>
-    {gameStarted && playerColor ? (
-      <div className={styles.boardWrapper}>
-        <h3 className={styles.status}>You are playing as {playerColor}</h3>
-        <div className={styles.chessboard}>
-          <Chessboard
-            position={fen}
-            onDrop={({ sourceSquare, targetSquare }) =>
-              handleMove({ sourceSquare, targetSquare })
-            }
-            orientation={playerColor}
-            draggable={!gameRef.current.game_over}
-          />
+      {gameStarted && playerColor ? (
+        <div className={styles.boardWrapper}>
+          <h3 className={styles.status}>You are playing as {playerColor}</h3>
+          <div className={styles.chessboard}>
+            <Chessboard
+              position={fen}
+              onDrop={({ sourceSquare, targetSquare }) =>
+                handleMove({ sourceSquare, targetSquare })
+              }
+              orientation={playerColor}
+              draggable={!gameRef.current.game_over}
+            />
+          </div>
         </div>
-      </div>
-    ) : (
-      <h3 className={styles.status}>Waiting for opponent...</h3>
-    )}
-  </div>
-);
+      ) : (
+        <h3 className={styles.status}>Waiting for opponent...</h3>
+      )}
+    </div>
+  );
 }
 
 export default ChessBoard;
